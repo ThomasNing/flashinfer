@@ -798,9 +798,14 @@ class MoERunner(TunableRunner):
     def __hash__(self) -> int:
         return hash(self._cache_key_extras())
 
+    def _input_cache_key_extras(self, inputs: List[torch.Tensor]) -> tuple:
+        """Optional tactic-pool identity, stable for packed and profiling inputs."""
+        return ()
+
     def get_cache_key_extras(self, inputs: List[torch.Tensor]) -> tuple:
-        # Configuration-only, so synthesized profiling inputs use the same key.
-        return self._cache_key_extras()
+        # Keep the runner hash configuration-only. Backends with input-specific
+        # tactic pools can additionally distinguish their persisted tuning keys.
+        return self._cache_key_extras() + self._input_cache_key_extras(inputs)
 
 
 # ---------------------------------------------------------------------------
